@@ -1,10 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.google.protobuf.gradle.generateProtoTasks
 import com.google.protobuf.gradle.id
 import com.google.protobuf.gradle.ofSourceSet
 import com.google.protobuf.gradle.plugins
 import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotestVersion = "4.2.5"
 
@@ -52,6 +52,7 @@ dependencies {
     runtimeOnly("org.slf4j:slf4j-simple:1.7.30")
     runtimeOnly("org.slf4j:slf4j-api:1.7.30")
 
+    implementation("javax.annotation:javax.annotation-api:1.2")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")

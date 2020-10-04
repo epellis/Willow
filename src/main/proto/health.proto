@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nedellis.azalea";
+option java_outer_classname = "HealthProto";
+
+package health;
+
+message Table {
+  map<string, int64> entries = 1;
+}
+
+service Health {
+  rpc Update(Table) returns (google.protobuf.Empty) {}
+}
