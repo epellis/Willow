@@ -1,28 +1,19 @@
+/* ktlint-disable no-wildcard-imports */
 import io.ktor.application.call
-import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
+import io.ktor.response.*
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import kotlinx.html.*
 
-fun HTML.index() {
-    head {
-        title("Hello from Ktor!")
-    }
-    body {
-        div {
-            +"Hello from Ktor"
-        }
-    }
-}
+/* ktlint-enable no-wildcard-imports */
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "127.0.0.1") {
         routing {
             get("/") {
-                call.respondHtml(HttpStatusCode.OK, HTML::index)
+                call.respondText("OK", status = HttpStatusCode.OK)
             }
         }
     }.start(wait = true)
