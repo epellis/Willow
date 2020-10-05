@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "com.nedellis.willow";
+option java_outer_classname = "RegisterProto";
+
+package register;
+
+message RegisterRequest {
+  string localURI = 1;
+}
+
+message RegisterResponse {
+  repeated string neighborURIs = 1;
+}
+
+service Register {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+}
