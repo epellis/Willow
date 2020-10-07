@@ -28,7 +28,7 @@ plugins {
     id("com.google.protobuf") version "0.8.13"
 }
 
-jib.from.image = "https://registry.hub.docker.com://openjdk:14-alpine"
+jib.from.image = "https://registry.hub.docker.com://openjdk:15-alpine"
 
 buildscript {
     repositories {
@@ -45,12 +45,12 @@ version = "1.0-SNAPSHOT"
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.9")
 
     testImplementation(kotlin("test-junit5"))
     implementation("io.ktor:ktor-server-netty:1.4.0")
 
-    runtimeOnly("org.slf4j:slf4j-simple:1.7.30")
-    runtimeOnly("org.slf4j:slf4j-api:1.7.30")
+    implementation("io.github.microutils:kotlin-logging-jvm:2.0.2")
 
     implementation("javax.annotation:javax.annotation-api:1.2")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")

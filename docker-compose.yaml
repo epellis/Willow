@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  willow:
+    image: epelesis/willow:latest
+    environment:
+      - PORT=8000
+    depends_on:
+      - redis
+    deploy:
+      mode: replicated
+      replicas: 5
+    ports:
+      - 8000
