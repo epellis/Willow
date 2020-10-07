@@ -4,7 +4,12 @@ import com.google.protobuf.Empty
 import com.nedellis.willow.Table
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.delay
 import java.net.URI
+import java.time.Duration
+import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.toDuration
 
 
 sealed class NetworkStatus
@@ -24,11 +29,13 @@ private class LocalHealthRpc(var networkStatus: NetworkStatus = Healthy) : Healt
                 incomingMessages[dest] = incomingMessages.getValue(dest).plus(listOf(request))
                 members[dest]!!.update(request)
             }
-            is Fail -> Unit
+            is Fail -> delay(1000L)
             is PartialFail -> {
                 if (!(networkStatus as PartialFail).failedMembers.contains(dest)) {
                     incomingMessages[dest] = incomingMessages.getValue(dest).plus(listOf(request))
                     members[dest]!!.update(request)
+                } else {
+                    delay(1000L)
                 }
             }
         }
@@ -36,6 +43,7 @@ private class LocalHealthRpc(var networkStatus: NetworkStatus = Healthy) : Healt
     }
 }
 
+@ExperimentalTime
 class IntegrationTest : StringSpec({
     /**
      * Build initialized health services, connected to each other by [LocalHealthRpc]
@@ -67,7 +75,7 @@ class IntegrationTest : StringSpec({
              */
             services.forEach {
                 it.table.entriesMap shouldBe mapOf(it.config.address.toString() to cycleCount)
-                it.incrementAndGossip()
+                it.advance()
                 it.table.entriesMap shouldBe mapOf(it.config.address.toString() to cycleCount + 1L)
                 healthRpc.incomingMessages.getValue(it.config.address).size shouldBe 0
             }
@@ -78,14 +86,14 @@ class IntegrationTest : StringSpec({
         val (services, healthRpc) = buildServices(2)
 
         for (cycleCount in 0..100) {
-            // Before IncrementAndGossip()
+            // Before Advance()
             services.forEach {
                 it.table.entriesMap shouldBe services.map { it.config.address.toString() to cycleCount }.toMap()
             }
 
-            services.forEach { it.incrementAndGossip() }
+            services.forEach { it.advance() }
 
-            // After IncrementAndGossip()
+            // After Advance()
             services.forEach {
                 it.table.entriesMap shouldBe services.map { it.config.address.toString() to cycleCount + 1L }.toMap()
                 healthRpc.incomingMessages.getValue(it.config.address).size shouldBe cycleCount + 1
@@ -93,18 +101,18 @@ class IntegrationTest : StringSpec({
         }
     }
 
-    "Eventually Failed Health System with Two Nodes" {
+    "Eventually Failed Health System with Two Nodes".config(timeout = 10.toDuration(TimeUnit.SECONDS)) {
         val (services, healthRpc) = buildServices(2)
 
         for (cycleCount in 0 until 10) {
-            // Before IncrementAndGossip()
+            // Before Advance()
             services.forEach {
                 it.table.entriesMap shouldBe services.map { it.config.address.toString() to cycleCount }.toMap()
             }
 
-            services.forEach { it.incrementAndGossip() }
+            services.forEach { it.advance() }
 
-            // After IncrementAndGossip()
+            // After Advance()
             services.forEach {
                 it.table.entriesMap shouldBe services.map { it.config.address.toString() to cycleCount + 1L }.toMap()
                 healthRpc.incomingMessages.getValue(it.config.address).size shouldBe cycleCount + 1
@@ -114,9 +122,9 @@ class IntegrationTest : StringSpec({
         healthRpc.networkStatus = Fail
 
         for (cycleCount in 10 until 100) {
-            services.forEach { it.incrementAndGossip() }
+            services.forEach { it.advance() }
 
-            // After IncrementAndGossip()
+            // After Advance()
             services.forEach {
                 val expectedTable = services.map { svc ->
                     if (svc.config.address == it.config.address) svc.config.address.toString() to cycleCount + 1L
